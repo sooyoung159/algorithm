@@ -1,73 +1,141 @@
-// heap을 통한 우선순위 큐
+// 우선순위 큐를 힙으로 구현한것
+// min, max는 자식 부모 비교값만 반대로 하면 쉽게 구할 수 있다.
 
-class PriortyQueue {
+class MinHeap {
   constructor() {
-    // 각 노드별 idx접글을 쉽게하기 위해 1-based 인덱스를 만들기위해 쓰지않는 값인 0을 넣어줌
-    this.queue = [0];
+    this.heap = [null];
   }
 
-  enqueue(element) {
-    let insertIdx = this.queue.length;
-    /*
-        부모 노드의 값 : Math.floor(qSize / 2);
-        만일 부모노드의 값이 현재 입력될 값보다 같거나 작으면 부모노드의 값을 isertIdx에 넣어주고
-        isertIdx를 부모노드의 idx로 바꿔주고 다시 검사
+  getMin() {
+    return this.heap[1];
+  }
 
-        isertIdx > 1 큰 경우에만 isertIdx==1 인 경우는 이미 전체 탐색이 완료한 경우이므로 종료
-        탐색 후 나온 isertIdx값에 새로운 원소를 넣어주면 됨.
-    */
-    while (insertIdx > 1 && this.queue[Math.floor(insertIdx / 2)] <= element) {
-      this.queue[insertIdx] = this.queue[Math.floor(insertIdx / 2)]; // 새로운 원소가 삽입될 idx에 부모의 값을 넣어주고(교체의 의미)
-      insertIdx = Math.floor(insertIdx / 2); // 새로운 원소 삽입 idx를 부모 idx로 바꿔 재검사
+  getSize() {
+    return this.heap.length - 1;
+  }
+
+  isEmpty() {
+    return this.heap.length < 2;
+  }
+
+  insert(node) {
+    let current = this.heap.length;
+    while (current > 1) {
+      const parent = ~~(current / 2);
+      if (this.heap[parent] > node) {
+        this.heap[current] = this.heap[parent];
+        current = parent;
+      } else break;
     }
-    this.queue[insertIdx] = element;
+    this.heap[current] = node;
   }
 
-  dequeue() {
-    let delValue = this.queue[1]; // 삭제될값
-    let lastValue = this.queue.pop(); // 큐의 마지막 값
-    this.queue[1] = lastValue; // 삭제 될 위치에 큐의 마지막 값을 넣어줌
+  remove() {
+    let min = this.heap[1];
+    if (this.heap.length > 2) {
+      this.heap[1] = this.heap[this.heap.length - 1];
+      this.heap.splice(this.heap.length - 1);
 
-    let qSize = this.queue.length - 1;
-    let pIdx = 1; // 탐색을 시작할 부모 idx
-    let cIdx = 2; // 탐색을 시작한 자식 idx
+      let current = 1;
+      let leftChildIndex = current * 2;
+      let rightChildIndex = current * 2 + 1;
 
-    while (cIdx <= qSize) {
-      // 두 자식중 큰 노드와 부모 노드 비교를 위한 작업
-      if (this.queue[cIdx] < this.queue[cIdx + 1]) {
-        cIdx += 1;
+      while (this.heap[leftChildIndex]) {
+        let compareWithChildrenIndex = leftChildIndex;
+        if (
+          this.heap[rightChildIndex] &&
+          this.heap[rightChildIndex] < this.heap[compareWithChildrenIndex]
+        ) {
+          compareWithChildrenIndex = rightChildIndex;
+        }
+
+        if (this.heap[current] > this.heap[compareWithChildrenIndex]) {
+          [this.heap[current], this.heap[compareWithChildrenIndex]] = [
+            this.heap[compareWithChildrenIndex],
+            this.heap[current],
+          ];
+
+          current = compareWithChildrenIndex;
+        } else break;
+
+        leftChildIndex = current * 2;
+        rightChildIndex = current * 2 + 1;
       }
-
-      // 자식 노드와 비교해서 크다면 break
-      if (lastValue >= this.queue[cIdx]) {
-        break;
-      }
-
-      /*
-      만약 자식노드가 더 큰 경우 !
-      현재 부모노드 값에 자식 값을 넣어주고
-      부모 idx를 자식 idx를 바꾸고 자식 idx를 왼쪽 자식 노드idx로 바꿔주고 다시 검사
-      */
-      this.queue[pIdx] = this.queue[cIdx];
-
-      pIdx = cIdx; // 검사할 부모노드는 현재 자식 노드 idx로
-      cIdx *= 2; // 자식 노드의 왼쪽 자식 노드 idx로
+    } else if (this.heap.length === 1) {
+      this.heap.splice(1, 1);
+    } else {
+      return null;
     }
 
-    // 검사 후 나온 pIdx에 lastValue값을 넣어줌
-    this.queue[pIdx] = lastValue;
-    return delValue;
+    return min;
+  }
+}
+
+class MaxHeap {
+  constructor() {
+    this.heap = [null];
   }
 
-  front() {
-    return this.queue[1];
+  getMax() {
+    return this.heap[1];
   }
 
-  size() {
-    return this.queue.length - 1;
+  getSize() {
+    return this.heap.length - 1;
   }
 
-  clear() {
-    this.queue = [0];
+  isEmpty() {
+    return this.heap.length < 2;
+  }
+
+  insert(node) {
+    let current = this.heap.length;
+    while (current > 1) {
+      const parent = ~~(current / 2);
+      if (this.heap[parent] < node) {
+        this.heap[current] = this.heap[parent];
+        current = parent;
+      } else break;
+    }
+    this.heap[current] = node;
+  }
+
+  remove() {
+    let max = this.heap[1];
+    if (this.heap.length > 2) {
+      this.heap[1] = this.heap[this.heap.length - 1];
+      this.heap.splice(this.heap.length - 1);
+
+      let current = 1;
+      let leftChildIndex = current * 2;
+      let rightChildIndex = current * 2 + 1;
+
+      while (this.heap[leftChildIndex]) {
+        let compareWithChildrenIndex = leftChildIndex;
+        if (
+          this.heap[rightChildIndex] &&
+          this.heap[rightChildIndex] > this.heap[compareWithChildrenIndex]
+        ) {
+          compareWithChildrenIndex = rightChildIndex;
+        }
+
+        if (this.heap[current] < this.heap[compareWithChildrenIndex]) {
+          [this.heap[current], this.heap[compareWithChildrenIndex]] = [
+            this.heap[compareWithChildrenIndex],
+            this.heap[current],
+          ];
+
+          current = compareWithChildrenIndex;
+        } else break;
+
+        leftChildIndex = current * 2;
+        rightChildIndex = current * 2 + 1;
+      }
+    } else if (this.heap.length === 1) {
+      this.heap.splice(1, 1);
+    } else {
+      return null;
+    }
+    return max;
   }
 }
