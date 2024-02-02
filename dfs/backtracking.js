@@ -20,7 +20,7 @@ const dfs1 = (arr, depth) => {
     if(visited[i]) continue
     selected.push(i)
     visited[i]=true
-    dfs(arr, depth + 1)
+    dfs(arr, depth + 1) // 테스트
     selected.pop()
     visited[i]=false
   }
